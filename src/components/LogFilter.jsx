@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Toolbar, TextField, Box, MenuItem } from '@mui/material';
+import { Toolbar, TextField, MenuItem } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { fetchLogLevels, fetchServices } from '../api';
 
@@ -8,9 +8,8 @@ export default function LogFilter({
   level, setLevel,
   start, setStart,
   end, setEnd,
-  onFilter
+  onFilter,
 }) {
-  // State to store options
   const [serviceOptions, setServiceOptions] = useState([]);
   const [levelOptions, setLevelOptions] = useState([]);
 
@@ -18,6 +17,12 @@ export default function LogFilter({
     fetchServices().then(setServiceOptions).catch(() => setServiceOptions([]));
     fetchLogLevels().then(setLevelOptions).catch(() => setLevelOptions([]));
   }, []);
+
+  // Trigger filtering automatically on filter change
+  useEffect(() => {
+    if (onFilter) onFilter();
+    // eslint-disable-next-line
+  }, [service, level, start, end]);
 
   return (
     <Toolbar sx={{ gap: 2, mb: 2 }}>

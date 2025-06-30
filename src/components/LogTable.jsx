@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
 import { fetchLogs } from '../api';
@@ -7,14 +7,14 @@ import dayjs from 'dayjs';
 
 export default function LogTable() {
   const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [level, setLevel] = useState('');
   const [service, setService] = useState('');
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
 
-  // Fetch logs when any filter changes
-  useEffect(() => {
+  // Fetch logs with current filters
+  const getLogs = useCallback(() => {
     setLoading(true);
     fetchLogs({
       page: 0,
@@ -24,16 +24,28 @@ export default function LogTable() {
       ...(start && { start: dayjs(start).toISOString() }),
       ...(end && { end: dayjs(end).toISOString() }),
     })
-      .then(data => setLogs(data.content))
+      .then(data => setLogs(data.content || []))
+      .catch(() => setLogs([]))
       .finally(() => setLoading(false));
-  }, [level, service, start, end]); // Triggers on any filter change
+  }, [level, service, start, end]);
+
+  // Initial load
+  useEffect(() => {
+    getLogs();
+  }, [getLogs]);
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 70 },
     { field: 'serviceName', headerName: 'Service', width: 140 },
     { field: 'level', headerName: 'Level', width: 100 },
     { field: 'message', headerName: 'Message', width: 320 },
-    { field: 'timestamp', headerName: 'Timestamp', width: 200 },
+    {
+      field: 'timestamp',
+      headerName: 'Timestamp',
+      width: 200,
+      valueFormatter: (params) =>
+        params.value ? dayjs(params.value).format('DD MMM YYYY, hh:mm A') : '',
+    },
   ];
 
   return (
@@ -47,6 +59,7 @@ export default function LogTable() {
           level={level} setLevel={setLevel}
           start={start} setStart={setStart}
           end={end} setEnd={setEnd}
+          onFilter={getLogs}
         />
         <div style={{ height: 430, width: '100%' }}>
           <DataGrid
