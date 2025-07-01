@@ -17,6 +17,7 @@ import {
   Dashboard as DashboardIcon, 
   Article as LogsIcon,
   Analytics as AnalyticsIcon,
+  Settings as SettingsIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
@@ -36,6 +37,18 @@ const navigationItems = [
     icon: LogsIcon, 
     key: 'logs',
     description: 'Application Logs'
+  },
+  { 
+    label: 'Alerts', 
+    icon: AnalyticsIcon, 
+    key: 'alerts',
+    description: 'Alerts & Incidents'
+  },
+  { 
+    label: 'Settings', 
+    icon: SettingsIcon, 
+    key: 'settings',
+    description: 'Preferences & Config'
   }
 ];
 
@@ -302,4 +315,5 @@ export default function Sidebar({
       {drawerContent}
     </Drawer>
   );
+  
 }

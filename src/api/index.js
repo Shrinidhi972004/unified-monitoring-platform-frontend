@@ -82,3 +82,71 @@ export async function fetchLogCountByLevel() {
     return [];
   }
 }
+
+// Fetch unread alerts (for badge & dropdown)
+export async function fetchUnreadAlerts() {
+  try {
+    const response = await axios.get("http://localhost:8080/api/alerts/unread", {
+      auth: { username: "admin", password: "admin123" },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch unread alerts:", error);
+    return [];
+  }
+}
+
+// Fetch all alerts (for alerts page)
+export async function fetchAlerts() {
+  try {
+    const response = await axios.get("http://localhost:8080/api/alerts", {
+      auth: { username: "admin", password: "admin123" },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch alerts:", error);
+    return [];
+  }
+}
+
+// Mark alert as read
+export async function markAlertAsRead(id) {
+  try {
+    const response = await axios.patch(
+      `http://localhost:8080/api/alerts/${id}/read`,
+      {},
+      { auth: { username: "admin", password: "admin123" } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to mark alert as read:", error);
+    return null;
+  }
+}
+
+
+// Fetch settings
+export async function fetchSettings() {
+  try {
+    const response = await axios.get("http://localhost:8080/api/settings", {
+      auth: { username: "admin", password: "admin123" },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch settings:", error);
+    return null;
+  }
+}
+
+// Save/update settings
+export async function saveSettings(settings) {
+  try {
+    const response = await axios.post("http://localhost:8080/api/settings", settings, {
+      auth: { username: "admin", password: "admin123" },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to save settings:", error);
+    return null;
+  }
+}

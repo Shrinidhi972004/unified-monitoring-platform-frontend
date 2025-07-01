@@ -289,139 +289,235 @@ export default function Dashboard() {
       </Grid>
 
       {/* Charts Section */}
-      <Grid container spacing={3}>
-        {/* Services Distribution */}
-        <Grid item xs={12} lg={6}>
-          <Card sx={{
-            height: '500px',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: '0 12px 30px rgba(0,0,0,0.1)'
-            }
+      <Box sx={{ 
+        display: 'flex',
+        flexDirection: { xs: 'column', lg: 'row' },
+        gap: 3,
+        width: '100%'
+      }}>
+        {/* Service Distribution Chart */}
+        <Card sx={{
+          flex: 1,
+          minHeight: '500px',
+          maxHeight: '500px',
+          transition: 'all 0.3s ease',
+          borderRadius: 3,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.15)'
+          }
+        }}>
+          <CardContent sx={{ 
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column',
+            p: 3
           }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ mb: 3 }}>
               <Typography variant="h5" fontWeight={700} gutterBottom color="text.primary">
                 Service Distribution
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Log volume by service
+              <Typography variant="body2" color="text.secondary">
+                Log volume by service across all applications
               </Typography>
-              
-              <Box sx={{ flexGrow: 1, position: 'relative' }}>
-                {data.loading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                    <Skeleton variant="circular" width={300} height={300} />
-                  </Box>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={data.services}
-                        dataKey="count"
-                        nameKey="serviceName"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={120}
-                        paddingAngle={2}
-                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(1)}%)`}
-                      >
-                        {data.services.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={CHART_COLORS.service[index % CHART_COLORS.service.length]} 
-                          />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip content={<CustomTooltip />} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+            
+            <Box sx={{ 
+              flexGrow: 1, 
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {data.loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Skeleton variant="circular" width={280} height={280} />
+                </Box>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={data.services}
+                      dataKey="count"
+                      nameKey="serviceName"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={130}
+                      paddingAngle={3}
+                      label={({ name, percent }) => 
+                        percent > 5 ? `${name}\n${(percent * 100).toFixed(1)}%` : ''
+                      }
+                      labelLine={false}
+                    >
+                      {data.services.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={CHART_COLORS.service[index % CHART_COLORS.service.length]}
+                          stroke="white"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip content={<CustomTooltip />} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconType="circle"
+                      wrapperStyle={{
+                        fontSize: '12px',
+                        paddingTop: '10px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
 
-        {/* Log Levels Analysis */}
-        <Grid item xs={12} lg={6}>
-          <Card sx={{
-            height: '500px',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: '0 12px 30px rgba(0,0,0,0.1)'
-            }
+        {/* Log Levels Analysis Chart */}
+        <Card sx={{
+          flex: 1,
+          minHeight: '500px',
+          maxHeight: '500px',
+          transition: 'all 0.3s ease',
+          borderRadius: 3,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.15)'
+          }
+        }}>
+          <CardContent sx={{ 
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column',
+            p: 3
           }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ mb: 3 }}>
               <Typography variant="h5" fontWeight={700} gutterBottom color="text.primary">
                 Log Levels Analysis
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Distribution by severity
+              <Typography variant="body2" color="text.secondary">
+                Distribution by severity and log level types
               </Typography>
-              
-              <Box sx={{ flexGrow: 1, position: 'relative' }}>
-                {data.loading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
-                    <Skeleton variant="rectangular" width="100%" height="100%" />
-                  </Box>
-                ) : (
-                  <>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={data.levels} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.3)} />
+            </Box>
+            
+            <Box sx={{ 
+              flexGrow: 1, 
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              {data.loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
+                  <Skeleton variant="rectangular" width="100%" height="100%" />
+                </Box>
+              ) : (
+                <>
+                  <Box sx={{ flex: 1, minHeight: 0 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        data={data.levels} 
+                        margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                      >
+                        <CartesianGrid 
+                          strokeDasharray="3 3" 
+                          stroke={alpha(theme.palette.divider, 0.3)}
+                          vertical={false}
+                        />
                         <XAxis 
                           dataKey="level" 
-                          tick={{ fontSize: 12 }}
+                          tick={{ fontSize: 12, fontWeight: 500 }}
                           stroke={theme.palette.text.secondary}
+                          axisLine={false}
+                          tickLine={false}
                         />
                         <YAxis 
                           tick={{ fontSize: 12 }}
                           stroke={theme.palette.text.secondary}
+                          axisLine={false}
+                          tickLine={false}
                         />
                         <RechartsTooltip content={<CustomTooltip />} />
                         <Bar 
                           dataKey="count" 
-                          radius={[4, 4, 0, 0]}
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={60}
                         >
                           {data.levels.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={getLevelColor(entry.level)} />
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={`url(#gradient-${entry.level})`}
+                            />
                           ))}
                         </Bar>
+                        <defs>
+                          {data.levels.map((entry) => {
+                            const color = getLevelColor(entry.level);
+                            return (
+                              <linearGradient
+                                key={`gradient-${entry.level}`}
+                                id={`gradient-${entry.level}`}
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop offset="0%" stopColor={color} stopOpacity={0.9} />
+                                <stop offset="100%" stopColor={color} stopOpacity={0.6} />
+                              </linearGradient>
+                            );
+                          })}
+                        </defs>
                       </BarChart>
                     </ResponsiveContainer>
-                    
-                    {/* Level Tags */}
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
-                      {data.levels.map((item) => {
-                        const IconComponent = getLevelIcon(item.level);
-                        return (
-                          <Chip
-                            key={item.level}
-                            icon={<IconComponent sx={{ fontSize: '16px !important' }} />}
-                            label={`${item.level.toUpperCase()}: ${item.count.toLocaleString()}`}
-                            sx={{
-                              bgcolor: alpha(getLevelColor(item.level), 0.1),
-                              color: getLevelColor(item.level),
-                              border: `1px solid ${alpha(getLevelColor(item.level), 0.3)}`,
-                              fontWeight: 600,
-                              '& .MuiChip-icon': {
-                                color: 'inherit'
-                              }
-                            }}
-                          />
-                        );
-                      })}
-                    </Box>
-                  </>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                  </Box>
+                  
+                  {/* Level Tags */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: 1, 
+                    mt: 2,
+                    pt: 2,
+                    borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                  }}>
+                    {data.levels.map((item) => {
+                      const IconComponent = getLevelIcon(item.level);
+                      return (
+                        <Chip
+                          key={item.level}
+                          icon={<IconComponent sx={{ fontSize: '14px !important' }} />}
+                          label={`${item.level.toUpperCase()}: ${item.count.toLocaleString()}`}
+                          size="small"
+                          sx={{
+                            bgcolor: alpha(getLevelColor(item.level), 0.1),
+                            color: getLevelColor(item.level),
+                            border: `1px solid ${alpha(getLevelColor(item.level), 0.2)}`,
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            '& .MuiChip-icon': {
+                              color: 'inherit'
+                            },
+                            '&:hover': {
+                              bgcolor: alpha(getLevelColor(item.level), 0.2),
+                              transform: 'translateY(-1px)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+                </>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 }

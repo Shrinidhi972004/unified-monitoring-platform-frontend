@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   AppBar, 
@@ -10,7 +10,9 @@ import {
   Tooltip,
   alpha,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  ThemeProvider,
+  createTheme
 } from '@mui/material';
 import { 
   Notifications as NotificationsIcon,
@@ -23,11 +25,52 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Sidebar from './components/Sidebar';
 import LogTable from './components/LogTable';
 import Dashboard from './components/Dashboard';
+import Alerts from './components/Alerts';
+import Settings from './components/Settings';
+import NotificationsDropdown from './components/NotificationsDropdown';
+import { fetchSettings, saveSettings } from './api';
 
 const drawerWidth = 280;
 const collapsedDrawerWidth = 72;
 
-export default function App() {
+// Create theme based on dark mode preference
+const createAppTheme = (darkMode) => createTheme({
+  palette: {
+    mode: darkMode ? 'dark' : 'light',
+    primary: {
+      main: '#667eea',
+      dark: '#764ba2',
+    },
+    secondary: {
+      main: '#f093fb',
+      dark: '#f5576c',
+    },
+    background: {
+      default: darkMode ? '#121212' : '#fafbfc',
+      paper: darkMode ? '#1e1e1e' : '#ffffff',
+    },
+    text: {
+      primary: darkMode ? '#ffffff' : '#2c3e50',
+      secondary: darkMode ? '#b0b0b0' : '#6c757d',
+    }
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: darkMode 
+            ? '0 4px 20px rgba(0,0,0,0.3)'
+            : '0 4px 20px rgba(0,0,0,0.1)',
+        },
+      },
+    },
+  },
+});
+
+function AppContent({ darkMode, setDarkMode, alertLevel, setAlertLevel }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selected, setSelected] = useState('dashboard');
@@ -37,6 +80,36 @@ export default function App() {
   const getCurrentDrawerWidth = () => {
     if (isMobile) return 0;
     return sidebarCollapsed ? collapsedDrawerWidth : drawerWidth;
+  };
+
+  const getPageTitle = () => {
+    switch (selected) {
+      case 'dashboard':
+        return 'Analytics Dashboard';
+      case 'logs':
+        return 'Application Logs';
+      case 'alerts':
+        return 'Alerts & Incidents';
+      case 'settings':
+        return 'Settings & Preferences';
+      default:
+        return 'Dashboard';
+    }
+  };
+
+  const getPageDescription = () => {
+    switch (selected) {
+      case 'dashboard':
+        return 'Monitor your system performance and metrics';
+      case 'logs':
+        return 'View and filter application log entries';
+      case 'alerts':
+        return 'Manage alerts and incident notifications';
+      case 'settings':
+        return 'Configure your dashboard preferences';
+      default:
+        return 'Dashboard overview';
+    }
   };
 
   const handleRefresh = () => {
@@ -49,7 +122,7 @@ export default function App() {
       <Box sx={{ 
         display: 'flex', 
         minHeight: '100vh',
-        bgcolor: '#fafbfc'
+        bgcolor: theme.palette.background.default
       }}>
         {/* Sidebar */}
         <Sidebar 
@@ -83,7 +156,7 @@ export default function App() {
             position="static" 
             elevation={0}
             sx={{
-              bgcolor: 'white',
+              bgcolor: theme.palette.background.paper,
               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
               color: 'text.primary'
             }}
@@ -119,13 +192,10 @@ export default function App() {
 
                 <Box>
                   <Typography variant="h6" fontWeight={600} color="text.primary">
-                    {selected === 'dashboard' ? 'Analytics Dashboard' : 'Application Logs'}
+                    {getPageTitle()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {selected === 'dashboard' 
-                      ? 'Monitor your system performance and metrics' 
-                      : 'View and filter application log entries'
-                    }
+                    {getPageDescription()}
                   </Typography>
                 </Box>
               </Box>
@@ -144,18 +214,7 @@ export default function App() {
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Notifications" arrow>
-                  <IconButton 
-                    sx={{ 
-                      color: 'text.secondary',
-                      '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) }
-                    }}
-                  >
-                    <Badge badgeContent={3} color="error">
-                      <NotificationsIcon />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
+                <NotificationsDropdown alertLevel={alertLevel} />
 
                 <Tooltip title="Settings" arrow>
                   <IconButton 
@@ -193,7 +252,7 @@ export default function App() {
               flexGrow: 1,
               p: 3,
               overflow: 'auto',
-              bgcolor: '#fafbfc',
+              bgcolor: theme.palette.background.default,
               '&::-webkit-scrollbar': {
                 width: '6px',
               },
@@ -211,9 +270,63 @@ export default function App() {
           >
             {selected === 'dashboard' && <Dashboard />}
             {selected === 'logs' && <LogTable />}
+            {selected === 'alerts' && <Alerts />}
+            {selected === 'settings' && (
+              <Settings 
+                darkMode={darkMode}
+                setDarkMode={setDarkMode}
+                alertLevel={alertLevel}
+                setAlertLevel={setAlertLevel}
+              />
+            )}
           </Box>
         </Box>
       </Box>
     </LocalizationProvider>
+  );
+}
+
+export default function App() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [alertLevel, setAlertLevel] = useState('WARN_ERROR');
+  const theme = createAppTheme(darkMode);
+
+  // Fetch persisted settings on first load
+  useEffect(() => {
+    fetchSettings()
+      .then(s => {
+        if (s) {
+          setDarkMode(Boolean(s.darkMode));
+          setAlertLevel(s.alertLevel || 'WARN_ERROR');
+        }
+      })
+      .catch(() => {
+        // Fallback: use defaults
+        console.log('Using default settings - no saved settings found');
+      });
+  }, []);
+
+  // Save settings to backend whenever changed
+  useEffect(() => {
+    // Skip saving on initial render to avoid saving defaults before loading
+    const timeoutId = setTimeout(() => {
+      saveSettings({ darkMode, alertLevel })
+        .catch(error => {
+          console.error('Failed to save settings:', error);
+        });
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [darkMode, alertLevel]);
+
+  return (
+    <ThemeProvider theme={theme}>
+      <AppContent 
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        alertLevel={alertLevel}
+        setAlertLevel={setAlertLevel}
+      />
+    </ThemeProvider>
   );
 }
