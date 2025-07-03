@@ -405,9 +405,11 @@ export default function Alerts() {
                     </ListItemIcon>
                     
                     <ListItemText
+                      primaryTypographyProps={{ component: 'div' }}
+                      secondaryTypographyProps={{ component: 'div' }}
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                          <Typography variant="subtitle1" fontWeight={600}>
+                          <Typography variant="subtitle1" fontWeight={600} component="span">
                             {alert.relatedService || "System"}
                           </Typography>
                           <Chip
@@ -441,13 +443,13 @@ export default function Alerts() {
                       }
                       secondary={
                         <Box>
-                          <Typography variant="body2" color="text.primary" sx={{ mb: 1 }}>
+                          <Typography variant="body2" color="text.primary" sx={{ mb: 1 }} component="div">
                             {alert.message}
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <ScheduleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography variant="caption" color="text.secondary" component="span">
                                 {formatTimestamp(alert.timestamp)}
                               </Typography>
                             </Box>
